@@ -9,39 +9,47 @@ namespace ConsoleApp4
         static void Main(string[] args)
         {
             List<Round> rounds = new List<Round>();
-            while(true)
+            while (true)
             {
                 Console.WriteLine("");
                 Console.WriteLine("=== Guess a country ===");
-                char answer = GetYesOrNo("Do you want to play (Y/N) ?");
-                if (answer == 'N')
+                bool wantsPlay = GetYesOrNo("Do you want to play (Y/N) ?");
+                if (!wantsPlay)
                 {
+                    int nSuccess = rounds.Count(r => r.success);
                     string exitMessage = rounds.Count > 0 ?
-                        $"Thanks for playing, you played {rounds.Count} times, hope you enjoyed!" :
-                        "Okay, maybe another time then"; 
+                        $"Thanks for playing, you played {rounds.Count} with {nSuccess} wins, hope you enjoyed!" :
+                        "Okay, maybe another time then";
 
                     Console.WriteLine(exitMessage);
                     return;
                 }
 
                 Round round = new();
-                round.Run();
-                rounds.Add(round);
+                rounds.Add(round.Run());
             }
         }
 
-        private static char GetYesOrNo(string prompt)
+        private static bool GetYesOrNo(string prompt)
+        {
+            char answer = GetCharInput("NY", prompt);
+            return answer == 'Y';
+        }
+
+        private static char GetCharInput(IEnumerable<char> allowed, string prompt)
         {
             while (true)
             {
-                Console.WriteLine("Do you want to play (Y/N) ?");
+                Console.WriteLine(prompt);
                 string strAnswer = Console.ReadLine() ?? "";
                 char chrAnwer = strAnswer.Length > 0 ? strAnswer.ToUpper()[0] : ' ';
-
-                if (chrAnwer == 'Y' || chrAnwer == 'N') return chrAnwer;
+                if (allowed.Any(c => c == chrAnwer)) return chrAnwer;
+                Console.WriteLine("Unrecognized letter");
             }
         }
-        
+
+
+
 
         class Round
         {
@@ -49,21 +57,21 @@ namespace ConsoleApp4
             const string availableLetters = "ABCDEFGHIJKLMNOPQRSTUVWXYZÅÄÖ";
 
             string wantedWord = wordList[rnd.Next(wordList.Length)].ToUpper();
-            HashSet<char> usedChars = new ();
+            readonly HashSet<char> usedChars = new();
+
+            public bool success = false;
 
             public Round()
             {
                 foreach (char c in wantedWord)
                 {
                     if (!availableLetters.Contains(char.ToUpper(c)))
-                    {
                         usedChars.Add(char.ToUpper(c));
-                    }
                 }
             }
 
 
-            public void Run()
+            public Round Run()
             {
                 StringBuilder incorrectLetters = new();
 
@@ -74,12 +82,11 @@ namespace ConsoleApp4
                     Console.WriteLine();
                     Console.WriteLine("Please enter either a single letter or a word with length {0}", wantedWord.Length);
                     Console.WriteLine("(You have {0} tries left)", triesLeft);
-                    if(incorrectLetters.Length > 0) Console.WriteLine($"Incorrect letters guessed: {incorrectLetters.ToString()}");
+                    if (incorrectLetters.Length > 0) Console.WriteLine($"Incorrect letters guessed: {incorrectLetters}");
                     WriteAvailableLetters();
                     writeWord();
 
                     string userInput = UserInput();
-                    char userChar = userInput.Length == 1 ? userInput[0] : ' ';
 
                     if (userInput.Length == 1)
                     {
@@ -98,29 +105,32 @@ namespace ConsoleApp4
                     if (userInput.Equals(wantedWord) || CheckWord())
                         found = true;
                 }
-                if(found)
+                if (found)
                 {
                     Console.WriteLine($"YAY You found the correct word {wantedWord}!!!");
+                    success = true;
                 }
                 else
                 {
                     Console.WriteLine("Sorry you have reached max numer of tries ((");
                     Console.WriteLine($"The correct answer would have been {wantedWord}");
                 }
+                return this;
             }
+
             private bool CheckWord()
             {
-                return !wantedWord.Any(c => !usedChars.Contains(c));
+                // All letters in wantedWord whould be amongst usedChars
+                return wantedWord.All(c => usedChars.Contains(c));
             }
 
             private void writeWord()
             {
-                List<char> list = wantedWord.ToList();
                 StringBuilder sb = new StringBuilder();
-                foreach (char c in list)
+                foreach (char c in wantedWord)
                     sb.Append(usedChars.Contains(c) ? c : '_');
 
-                Console.WriteLine($"Your country: {sb.ToString()}");
+                Console.WriteLine($"Your country: {sb}");
             }
 
             private void WriteAvailableLetters()
@@ -130,16 +140,17 @@ namespace ConsoleApp4
                 {
                     sb.Append(!usedChars.Contains(c) ? c : '_');
                 }
-                Console.WriteLine("Letters to choose from: " + sb.ToString());
+                Console.WriteLine($"Letters to choose from: {sb}");
             }
 
             private string UserInput()
             {
                 while (true)
                 {
-                    string str = (Console.ReadLine() ?? "").ToUpper();
+                    string str = (Console.ReadLine() ?? "").ToUpper().Trim();
 
-                    if(str.Length == 1 && usedChars.Contains(str[0])) {
+                    if (str.Length == 1 && usedChars.Contains(str[0]))
+                    {
                         Console.WriteLine("You already tried this letter, please try another one");
                         continue;
                     }
@@ -147,7 +158,9 @@ namespace ConsoleApp4
                     if (str.Length == 1 || str.Length == wantedWord.Length)
                         return str;
 
-                    Console.WriteLine("Unrecognized input");
+                    Console.WriteLine($"You should give either only a single letter, or aword word with lenght {wantedWord.Length}");
+                    Console.WriteLine($"(Your word had {str.Length} letters)");
+                    Console.WriteLine($"Please try again");
                 }
             }
         }

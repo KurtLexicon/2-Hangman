@@ -1,0 +1,59 @@
+{
+  "defaultLang": "en",
+  "languages": [ "en", "sv" ],
+  "translations": {
+    "DoYouWantToPlay": {
+      "en": "Do you want to play (Y/N) ?",
+      "sv": "Vill du spela (J/N) ?"
+    },
+    "YesNoAnswers": {
+      "en": "YN",
+      "sv": "JN"
+    },
+    "YesAnswer": {
+      "en": "Y",
+      "sv": "J"
+    },
+    "ThanksForPlaying": {
+      "en": "Thanks for playing, you played {0} games with {1} wins, hope you enjoyed!",
+      "sv": "Tack för matchen, vi spelade {0} gånger och du vann {1}"
+    },
+    "MaybeAnotherTime": {
+      "en": "Okay, maybe another time then",
+      "sv": "Okej, så kanske en annan gång"
+    }
+  }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
